@@ -48,7 +48,7 @@ router.post('/solve', upload.single('image'), async (req, res) => {
 
     // Prompt for the model with Markdown formatting
     const prompt = `
-      Please solve this math problem step by step and display by language in the image. 
+      Please solve this math problem step by step and display by Vietnamese. 
       Show your work and explain each step clearly.
       Format your response using Markdown:
       - Use **bold** for emphasis
