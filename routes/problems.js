@@ -58,15 +58,15 @@ router.post('/solve', upload.single('image'), async (req, res) => {
       
       Example format:
       
-      **Step 1: Understanding the problem**
-      * Given equation: \`2x + 5 = 13\`
-      * We need to solve for x
+      **Bước 1: Hiểu bài toán**
+      * Phương trình đã cho: \`2x + 5 = 13\`
+      * Cần tìm giá trị của \`z\`
       
-      **Step 2: Solving**
-      * Subtract 5 from both sides: \`2x = 8\`
-      * Divide both sides by 2: \`x = 4\`
+      **Bước 2: Giải phương trình**
+      * Trừ cả 2 vế cho 5: \`2x = 8\`
+      * Chia cả 2 vế cho 2: \`x = 4\`
       
-      **Solution:** x = 4
+      **Kết quả:** x = 4
     `;
 
     // Generate content
