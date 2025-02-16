@@ -3,7 +3,7 @@ const router = express.Router();
 const bigquery = require('../db/index');
 const multer = require('multer');
 const authMiddleware = require('../middleware/auth');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { VertexAI, HarmCategory, HarmBlockThreshold } = require('@google-cloud/vertexai');
 const fs = require('fs');
 
 // Configure multer for image upload
@@ -18,8 +18,23 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Initialize Vertex AI
+const project = 'gemetry';
+const location = 'us-central1';
+const visionModel = 'gemini-2.0-flash-exp';
+
+const vertexAI = new VertexAI({project: project, location: location});
+const generativeVisionModel = vertexAI.getGenerativeModel({
+    model: visionModel,
+    safetySettings: [{
+      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
+    }],
+    systemInstruction: {
+      role: 'system',
+      parts: [{text: 'You are a math solver with images, your name is Geometry. You will be given a math problem and you will need to solve it step by step. Do not answer questions, only solve math problems. Respond only in Vietnamese.'}]
+    }
+});
 
 // Helper function to convert image to base64
 function fileToGenerativePart(path, mimeType) {
@@ -43,7 +58,6 @@ router.post('/solve', upload.single('image'), async (req, res) => {
 
     const imagePath = req.file.path;
     const mimeType = req.file.mimetype;
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
     const imagePart = fileToGenerativePart(imagePath, mimeType);
 
     // Prompt for the model with Markdown formatting
@@ -53,26 +67,28 @@ router.post('/solve', upload.single('image'), async (req, res) => {
       Format your response using Markdown:
       - Use **bold** for emphasis
       - Use bullet points for steps
-      - Use \`code\` blocks for equations
+      - Use $$ for math equations (LaTeX format)
       - Number each major step
       
       Example format:
       
       **Bước 1: Hiểu bài toán**
-      * Phương trình đã cho: \`2x + 5 = 13\`
-      * Cần tìm giá trị của \`z\`
+      * Phương trình đã cho: $2x + 5 = 13$
+      * Cần tìm giá trị của $x$
       
       **Bước 2: Giải phương trình**
-      * Trừ cả 2 vế cho 5: \`2x = 8\`
-      * Chia cả 2 vế cho 2: \`x = 4\`
+      * Trừ cả 2 vế cho 5: $2x = 8$
+      * Chia cả 2 vế cho 2: $x = 4$
       
-      **Kết quả:** x = 4
+      **Kết quả:** $x = 4$
     `;
 
-    // Generate content
-    const result = await model.generateContent([prompt, imagePart]);
+    // Generate content using Vertex AI
+    const result = await generativeVisionModel.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }, imagePart] }]
+    });
     const response = await result.response;
-    const text = response.text();
+    const text = response.candidates[0].content.parts[0].text;
 
     // Save the solution to BigQuery
     const userId = req.user.id;
