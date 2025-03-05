@@ -23,17 +23,17 @@ const project = 'gemetry';
 const location = 'us-central1';
 const visionModel = 'gemini-2.0-flash-exp';
 
-const vertexAI = new VertexAI({ project: project, location: location });
+const vertexAI = new VertexAI({project: project, location: location});
 const generativeVisionModel = vertexAI.getGenerativeModel({
-  model: visionModel,
-  safetySettings: [{
-    category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-    threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
-  }],
-  systemInstruction: {
-    role: 'system',
-    parts: [{ text: 'You are a math solver with images, your name is Geometry. You will be given a math problem and you will need to solve it step by step. Do not answer questions, only solve math problems. Respond only in Vietnamese.' }]
-  }
+    model: visionModel,
+    safetySettings: [{
+      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
+    }],
+    systemInstruction: {
+      role: 'system',
+      parts: [{text: 'You are a math solver with images, your name is Geometry. You will be given a math problem and you will need to solve it step by step. Do not answer questions, only solve math problems. Respond only in Vietnamese.'}]
+    }
 });
 
 // Helper function to convert image to base64
